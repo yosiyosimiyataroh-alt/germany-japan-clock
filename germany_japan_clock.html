@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="独日時計">
+  <title>ドイツ・日本 時計</title>
+  <style>
+    :root{
+      color-scheme: light dark;
+      --bg:#f3f4f6; --card:#ffffff; --text:#111827; --muted:#6b7280;
+      --border:#d1d5db; --accent:#2563eb; --second:#dc2626;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{--bg:#0b1020; --card:#111827; --text:#f9fafb; --muted:#9ca3af; --border:#374151;}
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{min-height:100vh;padding:max(16px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+    .wrap{max-width:820px;margin:0 auto}
+    h1{font-size:22px;margin:4px 0 14px;text-align:center}
+    .clocks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:12px;text-align:center}
+    .country{font-weight:700;font-size:18px}
+    .zone{font-size:12px;color:var(--muted);margin-top:3px}
+    svg{width:100%;height:auto;display:block;margin:8px auto 2px;max-width:320px}
+    .digital{font-size:clamp(20px,5vw,30px);font-weight:800;letter-spacing:.5px}
+    .date{font-size:12px;color:var(--muted);margin-top:4px;min-height:18px}
+    .gap{margin-top:12px;padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--border);text-align:center;font-size:14px}
+    .note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+    @media (max-width:360px){
+      .card{padding:8px}.country{font-size:16px}.digital{font-size:18px}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>🇩🇪 ドイツ ｜ 日本 🇯🇵</h1>
+    <section class="clocks">
+      <article class="card">
+        <div class="country">🇩🇪 ドイツ</div>
+        <div class="zone">Europe/Berlin</div>
+        <svg id="clockDE" viewBox="0 0 240 240" aria-label="ドイツの現在時刻">
+          <circle cx="120" cy="120" r="108" fill="none" stroke="var(--border)" stroke-width="2"/>
+          <g id="ticksDE"></g><g id="numsDE"></g>
+          <line id="hDE" x1="120" y1="120" x2="120" y2="70" stroke="var(--text)" stroke-width="7" stroke-linecap="round"/>
+          <line id="mDE" x1="120" y1="120" x2="120" y2="45" stroke="var(--text)" stroke-width="4" stroke-linecap="round"/>
+          <line id="sDE" x1="120" y1="130" x2="120" y2="35" stroke="var(--second)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="120" cy="120" r="6" fill="var(--text)"/>
+        </svg>
+        <div id="digitalDE" class="digital">--:--:--</div>
+        <div id="dateDE" class="date">—</div>
+      </article>
+
+      <article class="card">
+        <div class="country">🇯🇵 日本</div>
+        <div class="zone">Asia/Tokyo</div>
+        <svg id="clockJP" viewBox="0 0 240 240" aria-label="日本の現在時刻">
+          <circle cx="120" cy="120" r="108" fill="none" stroke="var(--border)" stroke-width="2"/>
+          <g id="ticksJP"></g><g id="numsJP"></g>
+          <line id="hJP" x1="120" y1="120" x2="120" y2="70" stroke="var(--text)" stroke-width="7" stroke-linecap="round"/>
+          <line id="mJP" x1="120" y1="120" x2="120" y2="45" stroke="var(--text)" stroke-width="4" stroke-linecap="round"/>
+          <line id="sJP" x1="120" y1="130" x2="120" y2="35" stroke="var(--second)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="120" cy="120" r="6" fill="var(--text)"/>
+        </svg>
+        <div id="digitalJP" class="digital">--:--:--</div>
+        <div id="dateJP" class="date">—</div>
+      </article>
+    </section>
+    <div id="gap" class="gap">時差を計算中…</div>
+    <div class="note">ドイツの夏時間・冬時間は自動反映されます。</div>
+  </main>
+
+  <script>
+    const NS="http://www.w3.org/2000/svg";
+
+    function buildFace(ticksId, numsId){
+      const ticks=document.getElementById(ticksId), nums=document.getElementById(numsId);
+      for(let i=0;i<60;i++){
+        const a=i*6*Math.PI/180, major=i%5===0, r1=major?91:97, r2=103;
+        const l=document.createElementNS(NS,"line");
+        l.setAttribute("x1",120+Math.sin(a)*r1); l.setAttribute("y1",120-Math.cos(a)*r1);
+        l.setAttribute("x2",120+Math.sin(a)*r2); l.setAttribute("y2",120-Math.cos(a)*r2);
+        l.setAttribute("stroke","var(--muted)"); l.setAttribute("stroke-width",major?"2.3":"1");
+        ticks.appendChild(l);
+      }
+      for(let n=1;n<=12;n++){
+        const a=n*30*Math.PI/180, t=document.createElementNS(NS,"text");
+        t.setAttribute("x",120+Math.sin(a)*76); t.setAttribute("y",120-Math.cos(a)*76);
+        t.setAttribute("fill","var(--text)"); t.setAttribute("font-size","16");
+        t.setAttribute("font-weight","600"); t.setAttribute("text-anchor","middle");
+        t.setAttribute("dominant-baseline","middle"); t.textContent=n; nums.appendChild(t);
+      }
+    }
+
+    function parts(zone, now){
+      const p=new Intl.DateTimeFormat("en-GB",{timeZone:zone,hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"})
+        .formatToParts(now).reduce((o,x)=>(o[x.type]=x.value,o),{});
+      return {h:+p.hour,m:+p.minute,s:+p.second};
+    }
+    function draw(prefix,p){
+      document.getElementById("h"+prefix).setAttribute("transform",`rotate(${(p.h%12)*30+p.m*.5+p.s/120} 120 120)`);
+      document.getElementById("m"+prefix).setAttribute("transform",`rotate(${p.m*6+p.s*.1} 120 120)`);
+      document.getElementById("s"+prefix).setAttribute("transform",`rotate(${p.s*6} 120 120)`);
+      document.getElementById("digital"+prefix).textContent =
+        `${String(p.h).padStart(2,"0")}:${String(p.m).padStart(2,"0")}:${String(p.s).padStart(2,"0")}`;
+    }
+    function offsetMinutes(zone,date){
+      const p=new Intl.DateTimeFormat("en-CA",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"})
+        .formatToParts(date).reduce((o,x)=>(o[x.type]=x.value,o),{});
+      return Math.round((Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second)-date.getTime())/60000);
+    }
+    function update(){
+      const now=new Date();
+      draw("DE",parts("Europe/Berlin",now)); draw("JP",parts("Asia/Tokyo",now));
+      document.getElementById("dateDE").textContent=new Intl.DateTimeFormat("ja-JP",{timeZone:"Europe/Berlin",month:"numeric",day:"numeric",weekday:"short"}).format(now);
+      document.getElementById("dateJP").textContent=new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",month:"numeric",day:"numeric",weekday:"short"}).format(now);
+      const diff=(offsetMinutes("Asia/Tokyo",now)-offsetMinutes("Europe/Berlin",now))/60;
+      document.getElementById("gap").textContent=`日本はドイツより ${diff}時間進んでいます`;
+    }
+
+    buildFace("ticksDE","numsDE"); buildFace("ticksJP","numsJP");
+    update(); setInterval(update,1000);
+  </script>
+</body>
+</html>
