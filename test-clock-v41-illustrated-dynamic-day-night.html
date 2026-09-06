@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Düsseldorf & Ashiya Live Clock</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#f3f5f8;font-family:"Avenir Next","Helvetica Neue","SF Pro Display",Arial,sans-serif;color:#fff}
+.wrap{width:100%;max-width:1600px;margin:0 auto;padding:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;min-height:100svh}
+.panel{position:relative;overflow:hidden;min-height:100svh}
+.panel+.panel{border-left:3px solid rgba(255,255,255,.96)}
+.scene{position:absolute;inset:0;overflow:hidden}
+.scene svg{width:100%;height:100%;display:block}
+.overlay{position:absolute;inset:0;pointer-events:none}
+.head{position:absolute;left:8.2%;right:7.5%;top:3.2%;display:flex;justify-content:space-between;align-items:flex-start;z-index:4}
+.place{display:flex;gap:16px;align-items:flex-start}
+.flag{font-size:clamp(32px,4vw,62px);line-height:1}
+.city{font-size:clamp(30px,4vw,68px);font-weight:300;letter-spacing:.01em;line-height:1}
+.sub{margin-top:8px;font-size:clamp(15px,1.55vw,27px);font-weight:300;line-height:1.42}
+.status{text-align:center;font-weight:300}
+.status .icon{font-size:clamp(48px,5vw,84px);line-height:1}
+.status .label{font-size:clamp(18px,1.8vw,30px);margin-top:2px}
+
+.clock{
+  position:absolute;
+  left:50%;
+  top:16.2%;
+  transform:translateX(-50%);
+  width:73%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:rgba(255,255,255,.75);
+  border:2px solid rgba(255,255,255,.95);
+  z-index:3;
+}
+.face{position:absolute;inset:0;border-radius:50%}
+.tick{position:absolute;left:50%;top:50%;width:1px;height:3.2%;background:#101820;transform-origin:50% calc(50% + 43.4%);opacity:.84}
+.tick.major{width:1.5px;height:4.2%;opacity:.95}
+.num{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  color:#111820;
+  font-size:clamp(13px,1.7vw,27px);
+  font-weight:300;
+  letter-spacing:-.025em;
+  font-variant-numeric:lining-nums tabular-nums;
+}
+.hand{position:absolute;left:50%;bottom:50%;transform-origin:50% 100%;border-radius:999px;background:#101820}
+.hour{height:27%;width:3px;margin-left:-1.5px}
+.minute{height:38%;width:2px;margin-left:-1px}
+.second{height:39%;width:1px;margin-left:-.5px;background:#ed2e24}
+.hub{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;border-radius:50%;background:#101820}
+
+.digital{
+  position:absolute;left:50%;bottom:7.8%;transform:translateX(-50%);
+  width:92%;text-align:center;z-index:4;
+  background:transparent;
+}
+.time{font-size:clamp(34px,6.1vw,90px);font-weight:200;letter-spacing:.02em;line-height:1;font-variant-numeric:tabular-nums}
+.date{margin-top:18px;font-size:clamp(18px,2.4vw,35px);font-weight:300;letter-spacing:.01em}
+
+@media (max-width:760px){
+  .grid{min-height:auto}
+  .panel{min-height:58vw}
+  .head{top:2.2%;left:6%;right:5.5%}
+  .place{gap:8px}
+  .flag{font-size:clamp(18px,5vw,28px)}
+  .city{font-size:clamp(18px,5.4vw,30px)}
+  .sub{font-size:clamp(9px,2.4vw,14px);margin-top:4px;line-height:1.35}
+  .status .icon{font-size:clamp(25px,7vw,40px)}
+  .status .label{font-size:clamp(10px,2.7vw,15px)}
+  .clock{top:17.2%;width:73%}
+  .num{font-size:clamp(10px,3.1vw,17px)}
+  .hour{width:2.2px;margin-left:-1.1px}
+  .minute{width:1.5px;margin-left:-.75px}
+  .second{width:.8px;margin-left:-.4px}
+  .hub{width:7px;height:7px;margin:-3.5px}
+  .digital{bottom:5.8%}
+  .time{font-size:clamp(20px,7.1vw,40px)}
+  .date{font-size:clamp(10px,3vw,17px);margin-top:8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="grid">
+
+    <section class="panel de" id="dePanel">
+      <div class="scene" id="deScene"></div>
+      <div class="head">
+        <div class="place">
+          <div class="flag">🇩🇪</div>
+          <div>
+            <div class="city">Düsseldorf</div>
+            <div class="sub">デュッセルドルフ<br>ドイツ（中央ヨーロッパ時間）<br><span id="deZone">CET/CEST　UTC</span></div>
+          </div>
+        </div>
+        <div class="status"><div class="icon" id="deIcon">☀︎</div><div class="label" id="deDayLabel">昼</div></div>
+      </div>
+      <div class="clock">
+        <div class="face" id="deFace"></div>
+        <div class="hand hour" id="deHour"></div>
+        <div class="hand minute" id="deMinute"></div>
+        <div class="hand second" id="deSecond"></div>
+        <div class="hub"></div>
+      </div>
+      <div class="digital">
+        <div class="time" id="deTime">--:--:--</div>
+        <div class="date" id="deDate">----</div>
+      </div>
+    </section>
+
+    <section class="panel jp" id="jpPanel">
+      <div class="scene" id="jpScene"></div>
+      <div class="head">
+        <div class="place">
+          <div class="flag">🇯🇵</div>
+          <div>
+            <div class="city">Ashiya</div>
+            <div class="sub">芦屋<br>日本標準時<br>JST　UTC+9</div>
+          </div>
+        </div>
+        <div class="status"><div class="icon" id="jpIcon">☀︎</div><div class="label" id="jpDayLabel">昼</div></div>
+      </div>
+      <div class="clock">
+        <div class="face" id="jpFace"></div>
+        <div class="hand hour" id="jpHour"></div>
+        <div class="hand minute" id="jpMinute"></div>
+        <div class="hand second" id="jpSecond"></div>
+        <div class="hub"></div>
+      </div>
+      <div class="digital">
+        <div class="time" id="jpTime">--:--:--</div>
+        <div class="date" id="jpDate">----</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+
+function sceneSVG(city,isDay){
+  const isDE=city==="de";
+  const sky1=isDay?(isDE?"#1e98ee":"#2ea5f4"):"#07245e";
+  const sky2=isDay?(isDE?"#7cc7f3":"#8fd0f6"):"#3d3b78";
+  const water1=isDay?(isDE?"#1b8fd6":"#42a9dd"):"#0d3e79";
+  const water2=isDay?(isDE?"#56b9e8":"#7ccce9"):"#15528c";
+  const glow=isDay?"#ffffff":"#ffd56a";
+  const bldg=isDay?(isDE?"#466b7f":"#6d7e8b"):"#26344c";
+  const tree=isDay?"#2f7f35":"#163b2b";
+
+  let special="";
+  if(isDE){
+    special=`
+      <g>
+        <rect x="70" y="275" width="26" height="325" rx="5" fill="${isDay?"#d7d7cf":"#b9b9b2"}"/>
+        <ellipse cx="83" cy="262" rx="32" ry="16" fill="${isDay?"#6b7d87":"#415160"}"/>
+        <rect x="72" y="236" width="22" height="33" rx="6" fill="${isDay?"#6f7d84":"#495460"}"/>
+        <line x1="83" y1="200" x2="83" y2="238" stroke="${isDay?"#d44":"#f66"}" stroke-width="4"/>
+        <line x1="83" y1="210" x2="83" y2="238" stroke="#fff" stroke-width="1.5"/>
+      </g>
+      <g stroke="${isDay?"#405e70":"#52698a"}" stroke-width="4">
+        <line x1="250" y1="610" x2="250" y2="510"/>
+        <line x1="250" y1="510" x2="150" y2="590"/>
+        <line x1="250" y1="510" x2="360" y2="590"/>
+        <line x1="250" y1="510" x2="110" y2="605"/>
+        <line x1="250" y1="510" x2="405" y2="605"/>
+      </g>`;
+  }else{
+    special=`
+      <path d="M0 525 C150 425 295 480 430 400 C560 330 680 365 800 315 L800 590 L0 590Z"
+            fill="${isDay?"#4d7894":"#20345e"}" opacity=".98"/>
+      <path d="M0 555 C150 495 290 530 445 465 C580 408 695 430 800 395 L800 610 L0 610Z"
+            fill="${isDay?"#6c93a7":"#2d4168"}" opacity=".9"/>`;
+  }
+
+  let skyline="";
+  const xs=[120,170,215,305,350,410,470,530,585,640,690,735];
+  xs.forEach((x,i)=>{
+    const h=55+(i%4)*22+(isDE?0:8);
+    skyline+=`<rect x="${x}" y="${600-h}" width="${28+(i%3)*7}" height="${h}" fill="${bldg}" opacity=".96"/>`;
+    if(!isDay){
+      for(let r=0;r<3;r++) for(let c=0;c<2;c++){
+        skyline+=`<rect x="${x+6+c*10}" y="${600-h+10+r*15}" width="4" height="5" fill="#ffd46b" opacity=".9"/>`;
+      }
+    }
+  });
+
+  let trees="";
+  for(let x=0;x<800;x+=42){
+    trees+=`<circle cx="${x+20}" cy="595" r="${18+(x%3)*2}" fill="${tree}"/>`;
+  }
+
+  let reflections="";
+  if(!isDay){
+    for(let x=20;x<800;x+=38){
+      reflections+=`<rect x="${x}" y="655" width="3" height="${30+(x%70)}" fill="#ffc45b" opacity=".55"/>`;
+    }
+  }
+
+  const blossom = (!isDE && isDay) ? `
+    <g fill="#f6a6be" opacity=".95">
+      <circle cx="735" cy="560" r="32"/><circle cx="770" cy="545" r="38"/>
+      <circle cx="705" cy="575" r="26"/>
+    </g>` : (!isDE && !isDay) ? `
+    <g fill="#d889aa" opacity=".82">
+      <circle cx="735" cy="560" r="30"/><circle cx="770" cy="545" r="36"/>
+      <circle cx="705" cy="575" r="24"/>
+    </g>` : "";
+
+  return `
+  <svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="${city}sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${sky1}"/>
+        <stop offset="1" stop-color="${sky2}"/>
+      </linearGradient>
+      <linearGradient id="${city}water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${water1}"/>
+        <stop offset="1" stop-color="${water2}"/>
+      </linearGradient>
+    </defs>
+    <rect width="800" height="650" fill="url(#${city}sky)"/>
+    ${isDay?`
+      <g fill="white" opacity=".78">
+        <ellipse cx="125" cy="190" rx="78" ry="20"/>
+        <ellipse cx="180" cy="205" rx="54" ry="15"/>
+        <ellipse cx="610" cy="265" rx="70" ry="18"/>
+      </g>`:
+      `<circle cx="650" cy="100" r="3" fill="${glow}"/><circle cx="520" cy="150" r="2.5" fill="${glow}"/>
+       <circle cx="590" cy="220" r="2" fill="${glow}"/><circle cx="710" cy="180" r="2" fill="${glow}"/>`
+    }
+    ${special}
+    ${skyline}
+    ${trees}
+    ${blossom}
+    <rect x="0" y="620" width="800" height="380" fill="url(#${city}water)"/>
+    <path d="M0 655 C140 642 240 670 390 650 C560 625 665 665 800 640" fill="none" stroke="${isDay?"#cfeeff":"#2f6ba3"}" stroke-width="3" opacity=".62"/>
+    <path d="M0 710 C170 690 290 725 450 700 C575 680 705 715 800 690" fill="none" stroke="${isDay?"#b6e3f7":"#2a5e94"}" stroke-width="2" opacity=".55"/>
+    ${reflections}
+    ${isDE?`<g transform="translate(555 690)"><rect width="110" height="22" rx="7" fill="#f5f5ef"/><rect x="14" y="-14" width="62" height="17" rx="5" fill="#f8f8f2"/><rect x="20" y="-10" width="9" height="7" fill="#3c7095"/><rect x="34" y="-10" width="9" height="7" fill="#3c7095"/><rect x="48" y="-10" width="9" height="7" fill="#3c7095"/></g>`:""}
+  </svg>`;
+}
+
+function buildFace(id){
+  const face=document.getElementById(id);
+  for(let i=0;i<60;i++){
+    const tick=document.createElement("div");
+    tick.className="tick"+(i%5===0?" major":"");
+    tick.style.transform=`translate(-50%,-50%) rotate(${i*6}deg) translateY(-43.5%)`;
+    face.appendChild(tick);
+  }
+  for(let n=1;n<=12;n++){
+    const el=document.createElement("div");
+    el.className="num";
+    el.textContent=n;
+    const a=n*30*Math.PI/180;
+    const r=39.8;
+    const x=50+Math.sin(a)*r;
+    const y=50-Math.cos(a)*r;
+    el.style.left=x+"%";
+    el.style.top=y+"%";
+    face.appendChild(el);
+  }
+}
+buildFace("deFace"); buildFace("jpFace");
+
+function parts(tz){
+  const f=new Intl.DateTimeFormat("ja-JP",{
+    timeZone:tz,year:"numeric",month:"numeric",day:"numeric",
+    weekday:"short",hour:"2-digit",minute:"2-digit",second:"2-digit",
+    hour12:false
+  });
+  return Object.fromEntries(f.formatToParts(new Date()).map(x=>[x.type,x.value]));
+}
+function offsetHours(tz){
+  const now=new Date();
+  const utc=new Date(now.toLocaleString("en-US",{timeZone:"UTC"}));
+  const loc=new Date(now.toLocaleString("en-US",{timeZone:tz}));
+  return Math.round((loc-utc)/3600000);
+}
+function setClock(prefix,tz,city){
+  const p=parts(tz);
+  let h=Number(p.hour); if(h===24)h=0;
+  const m=Number(p.minute), s=Number(p.second);
+  const isDay=h>=6 && h<18;
+
+  document.getElementById(prefix+"Hour").style.transform=`rotate(${(h%12)*30+m*.5+s/120}deg)`;
+  document.getElementById(prefix+"Minute").style.transform=`rotate(${m*6+s*.1}deg)`;
+  document.getElementById(prefix+"Second").style.transform=`rotate(${s*6}deg)`;
+
+  document.getElementById(prefix+"Time").textContent =
+    `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  document.getElementById(prefix+"Date").textContent =
+    `${p.year}年${Number(p.month)}月${Number(p.day)}日（${p.weekday.replace("曜","")}）`;
+
+  document.getElementById(prefix+"Icon").textContent=isDay?"☀︎":"☾";
+  document.getElementById(prefix+"DayLabel").textContent=isDay?"昼":"夜";
+
+  const scene=document.getElementById(prefix+"Scene");
+  const key=isDay?"day":"night";
+  if(scene.dataset.mode!==key){
+    scene.innerHTML=sceneSVG(city,isDay);
+    scene.dataset.mode=key;
+  }
+}
+function update(){
+  setClock("de","Europe/Berlin","de");
+  setClock("jp","Asia/Tokyo","jp");
+  const off=offsetHours("Europe/Berlin");
+  document.getElementById("deZone").textContent=(off===2?"CEST":"CET")+"　UTC"+(off>=0?"+":"")+off;
+}
+update();
+setInterval(update,1000);
+</script>
+</body>
+</html>
