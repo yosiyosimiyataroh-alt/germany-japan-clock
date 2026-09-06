@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ドイツ・日本 時計</title>
+<style>
+:root{--ink:#101826}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:#0b1020;color:#fff;overflow:hidden}
+.wrap{width:100%;height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.panel{
+  position:relative;overflow:hidden;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:18px 8px 24px;
+  transition:background 1.2s ease,color 1.2s ease;
+}
+.panel.day.de{background:linear-gradient(180deg,#39aaff 0%,#a8dcff 55%,#fff1bd 100%)}
+.panel.night.de{background:linear-gradient(180deg,#06122b 0%,#102a57 53%,#101936 100%)}
+.panel.day.jp{background:linear-gradient(180deg,#59baff 0%,#ccecff 55%,#ffe0d5 100%)}
+.panel.night.jp{background:linear-gradient(180deg,#07122d 0%,#18295c 52%,#40245f 100%)}
+.panel:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 10%,rgba(255,255,255,.22),transparent 30%);
+}
+.stars{position:absolute;inset:0;opacity:0;transition:opacity 1s;pointer-events:none}
+.night .stars{opacity:.85}
+.stars:before{
+  content:"";position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;
+  box-shadow:20px 48px #fff,80px 82px #fff,140px 36px #fff,205px 105px #fff,
+  265px 56px #fff,330px 128px #fff,390px 44px #fff,455px 90px #fff,
+  35px 180px #fff,120px 220px #fff,235px 190px #fff,360px 230px #fff;
+}
+.sunmoon{
+  position:absolute;right:7%;top:5%;width:48px;height:48px;border-radius:50%;
+  transition:all 1s ease;
+}
+.day .sunmoon{background:#ffd84a;box-shadow:0 0 25px rgba(255,216,74,.5)}
+.night .sunmoon{background:#e5ebff;box-shadow:-10px 6px 0 #10224c,0 0 20px rgba(229,235,255,.18)}
+.header{position:relative;z-index:3;text-align:center;margin-bottom:10px}
+.flag{font-size:30px;line-height:1.1}
+.country{font-size:clamp(17px,3vw,34px);font-weight:850;letter-spacing:.06em}
+.city{font-size:clamp(10px,1.5vw,16px);letter-spacing:.13em;margin-top:2px}
+.badge{
+  display:inline-block;margin-top:7px;padding:5px 9px;border-radius:999px;
+  background:rgba(0,0,0,.14);border:1px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(8px);font-size:10px
+}
+.clock{
+  position:relative;z-index:3;width:min(40vw,320px);aspect-ratio:1;border-radius:50%;
+  background:#fff;border:5px solid rgba(255,255,255,.86);
+  box-shadow:0 16px 36px rgba(0,0,0,.22),inset 0 0 0 8px rgba(15,23,42,.04)
+}
+.mark,.num{position:absolute;left:50%;top:50%}
+.mark{width:2px;height:7px;background:#1b2432;transform-origin:50% 0}
+.mark.major{width:3px;height:12px}
+.num{
+  color:#121a27;font-weight:800;font-size:clamp(13px,2vw,21px);
+  transform:translate(-50%,-50%);
+}
+.hand{
+  position:absolute;left:50%;bottom:50%;transform-origin:50% 100%;
+  border-radius:99px
+}
+.hour{width:7px;height:25%;margin-left:-3.5px;background:#111827}
+.minute{width:5px;height:35%;margin-left:-2.5px;background:#111827}
+.second{width:2px;height:39%;margin-left:-1px;background:#e11d48}
+.pin{
+  position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7.5px;
+  border-radius:50%;background:#111827;box-shadow:inset 0 0 0 4px #e11d48
+}
+.digital{
+  position:relative;z-index:3;margin-top:12px;text-align:center;
+  width:min(91%,320px);padding:9px 5px;border-radius:15px;
+  background:rgba(7,18,46,.28);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px)
+}
+.time{font-size:clamp(22px,4vw,44px);font-weight:850;letter-spacing:.03em}
+.date{font-size:clamp(9px,1.4vw,13px);margin-top:3px}
+.tagline{
+  position:fixed;z-index:5;left:50%;bottom:7px;transform:translateX(-50%);
+  font-size:9px;letter-spacing:.28em;opacity:.65;white-space:nowrap
+}
+@media(max-width:640px){
+  .panel{padding:14px 5px 20px}
+  .flag{font-size:25px}
+  .country{font-size:16px}
+  .city{font-size:9px}
+  .badge{font-size:8px;padding:4px 6px}
+  .clock{width:43vw}
+  .digital{width:95%;padding:7px 3px}
+  .time{font-size:20px}
+  .date{font-size:9px}
+  .tagline{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="panel de" id="dePanel">
+    <div class="stars"></div><div class="sunmoon"></div>
+    <div class="header">
+      <div class="flag">🇩🇪</div>
+      <div class="country">GERMANY</div>
+      <div class="city">DÜSSELDORF</div>
+      <div class="badge" id="deBadge"></div>
+    </div>
+    <div class="clock">
+      <div id="deFace"></div>
+      <div class="hand hour" id="deHour"></div>
+      <div class="hand minute" id="deMinute"></div>
+      <div class="hand second" id="deSecond"></div>
+      <div class="pin"></div>
+    </div>
+    <div class="digital"><div class="time" id="deTime"></div><div class="date" id="deDate"></div></div>
+  </section>
+
+  <section class="panel jp" id="jpPanel">
+    <div class="stars"></div><div class="sunmoon"></div>
+    <div class="header">
+      <div class="flag">🇯🇵</div>
+      <div class="country">JAPAN</div>
+      <div class="city">ASHIYA</div>
+      <div class="badge" id="jpBadge"></div>
+    </div>
+    <div class="clock">
+      <div id="jpFace"></div>
+      <div class="hand hour" id="jpHour"></div>
+      <div class="hand minute" id="jpMinute"></div>
+      <div class="hand second" id="jpSecond"></div>
+      <div class="pin"></div>
+    </div>
+    <div class="digital"><div class="time" id="jpTime"></div><div class="date" id="jpDate"></div></div>
+  </section>
+</div>
+<div class="tagline">SAME SKY BEYOND BORDERS</div>
+
+<script>
+function buildFace(id){
+  const root=document.getElementById(id);
+  for(let i=0;i<60;i++){
+    const m=document.createElement('div');
+    m.className='mark'+(i%5===0?' major':'');
+    const angle=i*6;
+    m.style.transform=`translate(-50%,-50%) rotate(${angle}deg) translateY(-46%)`;
+    m.style.top='4%';
+    m.style.left='50%';
+    root.appendChild(m);
+  }
+  for(let n=1;n<=12;n++){
+    const el=document.createElement('div');
+    el.className='num'; el.textContent=n;
+    const a=(n*30-90)*Math.PI/180;
+    const r=39;
+    el.style.left=(50+Math.cos(a)*r)+'%';
+    el.style.top=(50+Math.sin(a)*r)+'%';
+    root.appendChild(el);
+  }
+}
+buildFace('deFace'); buildFace('jpFace');
+
+function getParts(zone){
+  const f=new Intl.DateTimeFormat('en-GB',{
+    timeZone:zone,hour12:false,
+    year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',
+    hour:'2-digit',minute:'2-digit',second:'2-digit'
+  });
+  return Object.fromEntries(f.formatToParts(new Date()).map(p=>[p.type,p.value]));
+}
+
+function updateOne(prefix,panelId,zone){
+  const p=getParts(zone);
+  const h=Number(p.hour), m=Number(p.minute), s=Number(p.second);
+  document.getElementById(prefix+'Hour').style.transform=`rotate(${(h%12)*30+m*.5}deg)`;
+  document.getElementById(prefix+'Minute').style.transform=`rotate(${m*6+s*.1}deg)`;
+  document.getElementById(prefix+'Second').style.transform=`rotate(${s*6}deg)`;
+
+  document.getElementById(prefix+'Time').textContent=
+    `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  const wd={Mon:'月',Tue:'火',Wed:'水',Thu:'木',Fri:'金',Sat:'土',Sun:'日'};
+  document.getElementById(prefix+'Date').textContent=
+    `${p.year}年${Number(p.month)}月${Number(p.day)}日（${wd[p.weekday]}）`;
+
+  const isDay=h>=6 && h<18;
+  const panel=document.getElementById(panelId);
+  panel.classList.toggle('day',isDay);
+  panel.classList.toggle('night',!isDay);
+  document.getElementById(prefix+'Badge').textContent=isDay?'☀️ DAY':'🌙 NIGHT';
+}
+function update(){
+  updateOne('de','dePanel','Europe/Berlin');
+  updateOne('jp','jpPanel','Asia/Tokyo');
+}
+update();
+setInterval(update,1000);
+</script>
+</body>
+</html>
