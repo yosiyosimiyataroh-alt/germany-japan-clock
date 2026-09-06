@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Düsseldorf & Ashiya Live Clock V15</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#f6f8fb;font-family:-apple-system,BlinkMacSystemFont,"Avenir Next","Helvetica Neue",Arial,sans-serif;color:#182131}
+body{min-height:100dvh}
+.wrap{max-width:1200px;margin:0 auto;padding:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.panel{position:relative;overflow:hidden;border-radius:22px;box-shadow:0 8px 24px rgba(20,35,60,.10)}
+.bg{display:block;width:100%;height:auto}
+
+.clock{
+ position:absolute;
+ left:50%;
+ top:20.4%;
+ transform:translateX(-50%);
+ width:70%;
+ aspect-ratio:1;
+ border-radius:50%;
+ z-index:1;
+ z-index:1;
+ background:rgba(255,255,255,.75) !important;
+ border:1.5px solid rgba(255,255,255,.95);
+ box-shadow:0 8px 20px rgba(0,0,0,.13);
+
+}
+.face{position:absolute;inset:0}
+.num{
+ position:absolute;
+ transform:translate(-50%,-50%);
+ font-family:"Avenir Next","Helvetica Neue","SF Pro Display",Arial,sans-serif;
+ font-size:clamp(10px,1.38vw,19px);
+ font-weight:300;
+ letter-spacing:-.02em;
+ font-variant-numeric:lining-nums tabular-nums;
+ font-feature-settings:"tnum" 1,"lnum" 1;
+ color:#172033;
+}
+.tick{
+ position:absolute;
+ width:.8px;
+ height:4px;
+ background:#7b8494;
+ opacity:.56;
+ transform:translate(-50%,-50%);
+}
+.tick.major{
+ width:1.1px;
+ height:8px;
+ background:#2f394a;
+ opacity:.88;
+}
+.hand{
+ position:absolute;
+ left:50%;
+ bottom:50%;
+ transform-origin:50% 100%;
+ border-radius:999px;
+}
+.hour{height:27%;width:2.4px;margin-left:-1.2px;background:#111820}
+.minute{height:37%;width:1.36px;margin-left:-.68px;background:#111820}
+.second{height:35%;width:.64px;margin-left:-.32px;background:#e53b32}
+.pin{
+ position:absolute;
+ left:50%;
+ top:50%;
+ width:8px;
+ height:8px;
+ margin:-4px;
+ border-radius:50%;
+ background:#111820;
+ border:1.5px solid #111820;
+}
+
+.digital{
+ position:absolute;
+ left:50%;
+ bottom:2.7%;
+ transform:translateX(-50%);
+ width:94%;
+ text-align:center;
+ color:#fff;
+ text-shadow:0 2px 8px rgba(0,0,0,.22);
+ padding:8px 0 7px;
+ isolation:isolate;
+}
+.digital::before{content:none !important;display:none !important;background:none !important;filter:none !important;backdrop-filter:none !important;}
+.time{
+ transform:translateY(16px);
+ font-family:"Avenir Next","Helvetica Neue",Arial,sans-serif;
+ font-size:clamp(18px,3.6vw,43px);
+ font-weight:300;
+ letter-spacing:.025em;
+ line-height:1;
+ font-variant-numeric:tabular-nums;
+}
+.date{
+ transform:translateY(9px);
+ margin-top:9px;
+ font-family:"Avenir Next","Helvetica Neue",Arial,sans-serif;
+ font-size:clamp(11px,1.65vw,23px);
+ font-weight:400;
+ letter-spacing:.02em;
+}
+
+@media(max-width:700px){
+ .wrap{padding:0}
+ .grid{gap:2px}
+ .panel{border-radius:0;box-shadow:none}
+ .clock{top:19.0%;width:70%}
+ .clock-underlay{display:none !important;background:none !important;filter:none !important;backdrop-filter:none !important;}
+ .num{font-size:clamp(9px,2.4vw,14px);font-weight:300}
+ .tick{height:3px}
+ .tick.major{height:7px}
+ .hour{width:2.08px;margin-left:-1.04px}
+ .minute{width:1.2px;margin-left:-.6px}
+ .second{width:.6px;margin-left:-.3px}
+ .time{font-size:clamp(16px,4.76vw,26px);font-weight:300;letter-spacing:.015em}
+ .date{font-size:clamp(10px,2.25vw,13px);margin-top:6px}
+}
+
+
+
+.clock-underlay{
+  display:none;
+}
+.de .clock-underlay{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(90,170,225,.78) 0%,
+      rgba(135,195,225,.74) 48%,
+      rgba(110,145,160,.70) 72%,
+      rgba(70,95,110,.68) 100%
+    );
+}
+.jp .clock-underlay{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(58,72,126,.78) 0%,
+      rgba(111,91,137,.74) 48%,
+      rgba(94,77,108,.72) 72%,
+      rgba(63,69,93,.70) 100%
+    );
+}
+
+</style>
+
+<style>
+.clock-face::before,.clock-face::after,
+.clock::before,.clock::after{
+  background:none !important;
+  box-shadow:none !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+}
+.digital::before,.digital::after{
+  content:none !important;
+  display:none !important;
+  background:none !important;
+  box-shadow:none !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+}
+</style>
+
+
+<style>
+/* V39: 時計盤75%、背景加工なし */
+.clock{
+  background:rgba(255,255,255,.75) !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+}
+.clock-underlay{
+  display:none !important;
+  background:none !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+}
+.digital{
+  background:transparent !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+}
+.digital::before,
+.digital::after{
+  content:none !important;
+  display:none !important;
+  background:none !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+  box-shadow:none !important;
+}
+</style>
+
+
+<style>
+/* V40: 背景写真をそのまま表示。放射状補正・ぼかし・濃色加工なし */
+.panel .bg{
+  filter:none !important;
+  backdrop-filter:none !important;
+  transform:none !important;
+  object-fit:cover !important;
+  object-position:center center !important;
+}
+.clock-underlay{display:none !important;}
+.digital,
+.digital::before,
+.digital::after{
+  background:transparent !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+}
+.digital::before,.digital::after{content:none !important;display:none !important;}
+.clock{
+  background:rgba(255,255,255,.75) !important;
+  filter:none !important;
+  backdrop-filter:none !important;
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="grid">
+    <section class="panel de">
+      <img class="bg" id="deBg" src="https://images.unsplash.com/photo-1758640353252-2f1f6736e06b?fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE3fHx8ZW58MHx8fHx8&ixlib=rb-4.1.0&q=60&w=3000" alt="">
+      <div class="clock-underlay"></div>
+      <div class="clock">
+        <div class="face" id="deFace"></div>
+        <div class="hand hour" id="deHour"></div>
+        <div class="hand minute" id="deMinute"></div>
+        <div class="hand second" id="deSecond"></div>
+        <div class="pin"></div>
+      </div>
+      <div class="digital">
+        <div class="time" id="deTime"></div>
+        <div class="date" id="deDate"></div>
+      </div>
+    </section>
+
+    <section class="panel jp">
+      <img class="bg" id="jpBg" src="https://www.yakei-kabegami.com/photo/yakei-kabegami/member/m000014/m000014_k00005807_1024-768.jpg" alt="">
+      <div class="clock-underlay"></div>
+      <div class="clock">
+        <div class="face" id="jpFace"></div>
+        <div class="hand hour" id="jpHour"></div>
+        <div class="hand minute" id="jpMinute"></div>
+        <div class="hand second" id="jpSecond"></div>
+        <div class="pin"></div>
+      </div>
+      <div class="digital">
+        <div class="time" id="jpTime"></div>
+        <div class="date" id="jpDate"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+function buildFace(id){
+ const root=document.getElementById(id);
+
+ for(let i=0;i<60;i++){
+   const a=i*6*Math.PI/180;
+   const r=i%5===0?44.6:45.9;
+   const t=document.createElement('div');
+   t.className='tick'+(i%5===0?' major':'');
+   t.style.left=(50+Math.sin(a)*r)+'%';
+   t.style.top=(50-Math.cos(a)*r)+'%';
+   t.style.transform=`translate(-50%,-50%) rotate(${i*6}deg)`;
+   root.appendChild(t);
+ }
+
+ for(let n=1;n<=12;n++){
+   const a=(n*30-90)*Math.PI/180;
+   const r=36.0;
+   const el=document.createElement('div');
+   el.className='num';
+   el.textContent=n;
+   el.style.left=(50+Math.cos(a)*r)+'%';
+   el.style.top=(50+Math.sin(a)*r)+'%';
+   root.appendChild(el);
+ }
+}
+
+buildFace('deFace');
+buildFace('jpFace');
+
+const wd={Mon:'月',Tue:'火',Wed:'水',Thu:'木',Fri:'金',Sat:'土',Sun:'日'};
+
+function getParts(zone){
+ const f=new Intl.DateTimeFormat('en-GB',{
+   timeZone:zone,
+   hour12:false,
+   year:'numeric',
+   month:'2-digit',
+   day:'2-digit',
+   weekday:'short',
+   hour:'2-digit',
+   minute:'2-digit',
+   second:'2-digit'
+ });
+ return Object.fromEntries(f.formatToParts(new Date()).map(x=>[x.type,x.value]));
+}
+
+
+const BG = {
+  de: {
+    day: "https://images.unsplash.com/photo-1758640353252-2f1f6736e06b?fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE3fHx8ZW58MHx8fHx8&ixlib=rb-4.1.0&q=60&w=3000",
+    night: "https://mir-s3-cdn-cf.behance.net/project_modules/2800_opt_1/c3227a133993579.61cb57480b414.jpg"
+  },
+  jp: {
+    day: "https://photohito.k-img.com/uploads/photo27/user26679/5/d/5d39eb8a9305938c06962e6107e6fc78/5d39eb8a9305938c06962e6107e6fc78_l.jpg",
+    night: "https://www.yakei-kabegami.com/photo/yakei-kabegami/member/m000014/m000014_k00005807_1024-768.jpg"
+  }
+};
+
+function applyBackground(which, hour) {
+  const isNight = (hour >= 18 || hour < 6);
+  const el = document.getElementById(which + "Bg");
+  if (el) el.src = isNight ? BG[which].night : BG[which].day;
+}
+
+function updateClock(prefix,zone){
+ const p=getParts(zone);
+ const h=+p.hour, m=+p.minute, s=+p.second;
+
+ document.getElementById(prefix+'Hour').style.transform=
+   `rotate(${(h%12)*30 + m*.5 + s/120}deg)`;
+ document.getElementById(prefix+'Minute').style.transform=
+   `rotate(${m*6 + s*.1}deg)`;
+ document.getElementById(prefix+'Second').style.transform=
+   `rotate(${s*6}deg)`;
+
+ document.getElementById(prefix+'Time').textContent=
+   `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+ document.getElementById(prefix+'Date').textContent=
+   `${p.year}年${+p.month}月${+p.day}日（${wd[p.weekday]}）`;
+}
+
+function tick(){
+ updateClock('de','Europe/Berlin');
+ updateClock('jp','Asia/Tokyo');
+}
+tick();
+setInterval(tick,1000);
+
+function localHourInTZ(tz){
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    hour: "2-digit",
+    hour12: false
+  }).formatToParts(new Date());
+  const h = parts.find(p => p.type === "hour");
+  return h ? Number(h.value) : 12;
+}
+
+function refreshDayNightBackgrounds(){
+  const deH = localHourInTZ("Europe/Berlin");
+  const jpH = localHourInTZ("Asia/Tokyo");
+  const deNight = deH >= 18 || deH < 6;
+  const jpNight = jpH >= 18 || jpH < 6;
+
+  const deBg = document.getElementById("deBg");
+  const jpBg = document.getElementById("jpBg");
+
+  if (deBg && typeof BG !== "undefined") {
+    deBg.src = deNight ? BG.de.night : BG.de.day;
+  }
+  if (jpBg && typeof BG !== "undefined") {
+    jpBg.src = jpNight ? BG.jp.night : BG.jp.day;
+  }
+}
+
+</script>
+</body>
+</html>
